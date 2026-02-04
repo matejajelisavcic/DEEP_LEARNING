@@ -22,18 +22,22 @@ b = torch.tensor([
 
 lr = .01
 
-Yhat = X@w+b
-r = Yhat-Y
-SSE = r.T@r
-loss = SSE/3
+for i in range(1000):
+    Yhat = X@w+b
+    r = Yhat-Y
+    SSE = r.T@r
+    loss = SSE/3
 
-loss.backward()
+    loss.backward()
 
-for i in range(10):
     with torch.no_grad():
         w -= lr*w.grad
         b -= lr*b.grad
     print(w, b)
 
-w.grad.zero_()
-b.grad.zero_()
+    w.grad.zero_()
+    b.grad.zero_()
+    print(w, b) 
+
+
+#-0.2265 4.851
