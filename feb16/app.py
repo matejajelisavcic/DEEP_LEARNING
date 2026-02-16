@@ -9,11 +9,31 @@ data = pd.read_csv('data.csv')
 features = torch.tensor(data.drop('Price',axis=1).to_numpy()).float()
 target = torch.tensor(data['Price'].to_numpy()).float().reshape(-1,1)
 
-fm = features.mean()
-fs = features.std()
-tm = target.mean()
-ts = target.std()
+fm = features.mean().reshape(1,-1)
+fs = features.std().reshape(1,-1)
+tm = target.mean().reshape(1,-1)
+ts = target.std().reshape(1,-1)
 
+X = (features - fm) / fs
+Y = (target - tm) / ts
 
+model = nn.Linear(1,1)
+criterion = nn.MSELoss()
+optimizer = optim.SGD(model.parameters(), lr=0.1)
 
-print(fm)
+epochs = 100
+for epoch in range(epochs):
+    Yhat = model(X)
+    loss = criterion(Yhat,Y)
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+
+torch.save({
+    'fm': fm,
+    'fs': fs,
+    'tm': tm,
+    'ts': ts,
+    'parameters': model.state_dict()
+},'model.pth')
+
