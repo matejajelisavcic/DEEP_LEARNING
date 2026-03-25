@@ -1,12 +1,23 @@
 import torch
 from torchvision import datasets,transforms
+import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import DataLoader
-from grid import save_image_grid
-import numpy as np 
+'''from grid import save_image_grid
+import numpy as np '''
+
+torch.manual_seed(1)
 
 dataset = datasets.MNIST(
     root = './data',
     train = True,
+    download = True,
+    transform = transforms.ToTensor()
+)
+
+test_dataset = datasets.MNIST(
+    root = './data',
+    train = False,
     download = True,
     transform = transforms.ToTensor()
 )
@@ -19,10 +30,40 @@ dataset = datasets.MNIST(
 
 loader = DataLoader(
     dataset,
-    batch_size = 10
+    batch_size = 64,
+    shuffle = True # Changing the batches up, better for learning
 )
 
-for i,(images,labels) in enumerate(loader):
-    save_image_grid(images, path='samples.png')
-    if i == 9:
-        break
+DataLoader(
+    test_dataset,
+    batch_size = 1000,
+    shuffle = False
+)
+
+model = nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(784,128),
+    nn.ReLU(),
+    nn.Linear(128,64),
+    nn.ReLU(),
+    nn.Linear(64,10)
+)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=.001)
+epochs = 10
+
+for epoch in range(epochs):
+    total_loss = 0
+    correct = 0
+    total = 0
+    for images, labels in loader:
+        optimizer.zero_grad()
+        output = model(images)
+        loss = criterion(output, labels)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+        total += labels.size(0)
+        correct += (output.argmax(1) == labels).sum().item()
+    print(f'Epoch: {epoch}, Loss: {total_loss/len(loader)}, Accuracy: {correct/total}')
