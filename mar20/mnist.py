@@ -67,3 +67,5 @@ for epoch in range(epochs):
         total += labels.size(0)
         correct += (output.argmax(1) == labels).sum().item()
     print(f'Epoch: {epoch}, Loss: {total_loss/len(loader)}, Accuracy: {correct/total}')
+
+torch.save(model.state_dict(),'model.pth')
